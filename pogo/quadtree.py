@@ -3,6 +3,12 @@ A simple quadtree that we'll use to solve the TSP in a suboptimal but efficient 
 """
 import logging
 class Tree(object):
+    hilbert_map = {
+        'a': {(0, 0): (0, 'd'), (0, 1): (1, 'a'), (1, 0): (3, 'b'), (1, 1): (2, 'a')},
+        'b': {(0, 0): (2, 'b'), (0, 1): (1, 'b'), (1, 0): (3, 'a'), (1, 1): (0, 'c')},
+        'c': {(0, 0): (2, 'c'), (0, 1): (3, 'd'), (1, 0): (1, 'c'), (1, 1): (0, 'b')},
+        'd': {(0, 0): (0, 'a'), (0, 1): (3, 'c'), (1, 0): (1, 'd'), (1, 1): (2, 'd')},
+    }
     def __init__(self, rect, level):
         #logging.info(rect)
         self.rect = rect
@@ -18,7 +24,18 @@ class Tree(object):
             }
         else: 
             self.nodes = None
-        
+    
+    def point_to_hilbert(x, y, order=16):
+        current_square = 'a'
+        position = 0
+        for i in range(order - 1, -1, -1):
+            position <<= 2
+            quad_x = 1 if x & (1 << i) else 0
+            quad_y = 1 if y & (1 << i) else 0
+            quad_position, current_square = hilbert_map[current_square][(quad_x, quad_y)]
+            position |= quad_position
+        return position
+
     def getObjects(self):
         if self.nodes is None:
             return self.objects
