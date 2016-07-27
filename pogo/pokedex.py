@@ -198,7 +198,7 @@ class Pokedex(dict):
             self.CHANSEY, self.BUTTERFREE, self.ARCANINE, self.AERODACTYL
         ]
         self.rarity[Rarity.UNCOMMON] = [
-            self.VULPIX, self.TENTACOOL, self.STARYU, self.SQUIRTLE, self.SPEAROW,
+            self.VULPIX, self.TENTACOOL, self.STARYU, self.SQUIRTLE, 
             self.SHELLDER, self.SEEL, self.SANDSLASH, self.RHYHORN, self.RATICATE,
             self.PSYDUCK, self.PONYTA, self.PIKACHU, self.PIDGEOTTO, self.PERSIAN,
             self.METAPOD, self.MAGNETON, self.KOFFING, self.KADABRA, self.KABUTO,
@@ -208,7 +208,7 @@ class Pokedex(dict):
             self.BULBASAUR, self.ARBOK, self.ABRA
         ]
         self.rarity[Rarity.COMMON] = [
-            self.WEEDLE, self.VOLTORB, self.VENONAT, self.SLOWPOKE, self.SANDSHREW,
+            self.WEEDLE, self.VOLTORB, self.VENONAT, self.SLOWPOKE, self.SANDSHREW,self.SPEAROW,
             self.POLIWAG, self.PARAS, self.ODDISH, self.NIDORAN_MALE, self.NIDORAN_FEMALE,
             self.MEOWTH, self.MANKEY, self.MAGNEMITE, self.MAGIKARP, self.MACHOP, self.KRABBY,
             self.GOLDEEN, self.GEODUDE, self.GASTLY, self.EEVEE, self.EKANS, self.DROWZEE,
