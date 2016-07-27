@@ -3,9 +3,9 @@ import time
 
 from api import PokeAuthSession
 from location import Location
-from custom_exceptions import GeneralPogoException
+from custom_exceptions import GeneralPogoException, NoFortFoundException
 
-from pokedex import pokedex
+from pokedex import pokedex, Rarity
 from inventory import items
 
 class Trainer(object):
@@ -90,7 +90,7 @@ class Trainer(object):
             # Check for balls and see if we pass
             # wanted threshold
             for i in range(len(balls)):
-                if balls[i] in bag:
+                if balls[i] in bag and bag[balls[i]]>0: #unsure how this was supposed to work, but I got an index out of range exception without check this. I think I might have had a slot for super balls but no super ball?
                     altBall = balls[i]
                     if chances[i] > thresholdP:
                         bestBall = balls[i]
@@ -171,7 +171,10 @@ class Trainer(object):
     def findClosestFort(self):
         # Find nearest fort (pokestop)
         logging.info("Finding Nearest Fort:")
-        return self.sortCloseForts()[0]
+        try:
+            return self.sortCloseForts()[0]
+        except KeyError:
+            raise NoFortFoundException("No fort was found nearby")
 
 
     # Walk to fort and spin
@@ -182,7 +185,7 @@ class Trainer(object):
             logging.info("Spinning the Fort \"%s\":" % details.name)
 
             # Walk over
-            self.session.walkTo(fort.latitude, fort.longitude, step=3.2)
+            self.session.walkTo(fort.latitude, fort.longitude, step=5.2)
             # Give it a spin
             fortResponse = self.session.getFortSearch(fort)
             logging.info(fortResponse)
@@ -231,7 +234,7 @@ class Trainer(object):
 
     # Understand this function before you run it.
     # Otherwise you may flush pokemon you wanted.
-    def cleanPokemon(self, thresholdCP=50):
+    def cleanPokemon(self, thresholdCP=300, thresholdRarity=Rarity.RARE):
         logging.info("Cleaning out Pokemon...")
         party = self.session.checkInventory().party
         evolables = [pokedex.PIDGEY, pokedex.RATTATA, pokedex.ZUBAT]
@@ -246,8 +249,12 @@ class Trainer(object):
                     continue
 
                 # Get rid of low CP, low evolve value
-                logging.info("Releasing %s" % pokedex[pokemon.pokemon_id])
-                self.session.releasePokemon(pokemon)
+                if pokedex.getRarityById(pokemon.pokemon_id) < thresholdRarity:
+                    logging.info("Releasing %s" % pokedex[pokemon.pokemon_id])
+                    self.session.releasePokemon(pokemon)
+                    time.sleep(1)
+                else:
+                    logging.info("Conserving %s" % pokedex[pokemon.pokemon_id])
 
         # Evolve those we want
         for evolve in evolables:
@@ -265,7 +272,7 @@ class Trainer(object):
             for pokemon in pokemons:
                 logging.info("Evolving %s" % pokedex[pokemon.pokemon_id])
                 logging.info(self.session.evolvePokemon(pokemon))
-                time.sleep(1)
+                time.sleep(8) #if I were Niantic I'd check on fast evolutions to ban bots. not much of a sacrifice...
                 self.session.releasePokemon(pokemon)
                 time.sleep(1)
 
@@ -296,18 +303,18 @@ class Trainer(object):
     def simpleBot(self, poko_session):
         # Trying not to flood the servers
         cooldown = 1
-
         # Run the bot
         while True:
             forts = self.sortCloseForts()
-            #self.cleanPokemon(thresholdCP=200)
+            self.cleanPokemon(thresholdCP=300, thresholdRarity=Rarity.UNCOMMON)
             self.cleanInventory()
             try:
                 for fort in forts:
                     pokemon = self.findBestPokemon()
-                    self.walkAndCatch(pokemon)
-                    pokemon = self.findBestPokemon()
-                    self.walkAndCatch(pokemon)
+                    if pokemon is not None:
+                        self.walkAndCatch(pokemon)
+                        pokemon = self.findBestPokemon()
+                        self.walkAndCatch(pokemon)
                     self.walkAndSpin(fort)
                     cooldown = 1
                     time.sleep(1)

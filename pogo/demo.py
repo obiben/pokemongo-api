@@ -3,6 +3,7 @@ import argparse
 import logging
 import time
 import sys
+import getpass
 
 import util
 from api import PokeAuthSession
@@ -18,10 +19,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--auth", help="Auth Service", required=True)
     parser.add_argument("-u", "--username", help="Username", required=True)
-    parser.add_argument("-p", "--password", help="Password", required=True)
+    parser.add_argument("-p", "--password", help="Password", required=False)
     parser.add_argument("-l", "--location", help="Location", required=True)
     parser.add_argument("-g", "--geo_key", help="GEO API Secret")
     args = parser.parse_args()
+
+    if not args.password:
+        args.password = getpass.getpass()
 
     # Check service
     if args.auth not in ['ptc', 'google']:
@@ -59,6 +63,6 @@ if __name__ == '__main__':
         
         # see Trainer.simpleBot() for logical usecases
         # eg. trainer.simpleBot(poko_session)
-
+        #trainer.simpleBot(poko_session)
     else:
         logging.critical('Session not created successfully')
